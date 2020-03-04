@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for UNIX (IBM AIX for System Power System-64) 2017.2 (Build 744U)" ts="2020-03-03 21:10:49">
-<Routine name="IBSR.preco.MrgPrzPrEPontual" type="MAC" languagemode="0" timestamp="65437,58039.71774"><![CDATA[
-IBSRprecoMrgPrzPrEPontual ; Atualiza Margem-Prazo-Prc.Especial Pontual ; <06/10 - DSD> ;Última Alteração   FLCARVALHO 28/02/2020 16:07:19
+<Export generator="Cache" version="25" zv="Cache for UNIX (IBM AIX for System Power System-64) 2017.2 (Build 744U)" ts="2020-03-03 11:04:54">
+<Routine name="IBSR.preco.MrgPrzPrEPontual" type="MAC" languagemode="0" timestamp="65416,36197.579681"><![CDATA[
+IBSRprecoMrgPrzPrEPontual ; Atualiza Margem-Prazo-Prc.Especial Pontual ; <06/10 - DSD> ;Última Alteração   douglass 07/02/2020 10:03:17
 #Include sistema.BibliotecaMacro2
 		;
 MPE(USRT,CDEE,DFAT,%AMRO,RG,TIRE) ; PROCESSA ALTERACOES - MARGEM-PRAZO-PRC.ESPECIAL
@@ -265,11 +265,10 @@ CIV		; Critica Data de Início de Vigência
  		..D BSP
  		..I CMOR?1""!(STDE) S TIRE="ERRO: Cliente/produto ("_CPRO_") sem BASE SUPRIDORA na data de vigência."
 		..E  I TPAP?1"M" D
-		... I ('XAPCN) && ($$margemEstaBloqueada(DTVI, CPRO)) S TIRE="ERRO: Preços e margens em manutenção. Tente mais tarde." ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por grupo de produto />
 		...; Inclusão da verificação de bloqueio de margens Tarefa 0059761B - DSD - 01/2015
- 		...;S X=$G(^IPBMA(1)),DIBF=$P(X,"|",2) 
- 		...;I ('XAPCN)&&(DIBF)&&(DTVI'<DIBF) S TIRE="ERRO: Preços e margens em manutenção. Tente mais tarde." ; <flcarvalho - GDTI-3047 - XAPCN - Indica se é aplicação de cenário do sistema de custos>
-		...;;I DIBF,DTVI'<DIBF S TIRE="ERRO: Preços e margens em manutenção. Tente mais tarde."
+ 		...S X=$G(^IPBMA(1)),DIBF=$P(X,"|",2) 
+ 		...I ('XAPCN)&&(DIBF)&&(DTVI'<DIBF) S TIRE="ERRO: Preços e margens em manutenção. Tente mais tarde." ; <flcarvalho - GDTI-3047 - XAPCN - Indica se é aplicação de cenário do sistema de custos>
+		...;I DIBF,DTVI'<DIBF S TIRE="ERRO: Preços e margens em manutenção. Tente mais tarde."
 		;
 		I TPAP?1"M" S X=^IPAUX(PART,"MPE",1,1),$P(X,"|",5)=DTVI,^IPAUX(PART,"MPE",1,1)=X
 		;
@@ -913,34 +912,6 @@ armazenar(CCLI,CPRO,CDEP,DTVI,MDCL,VGAP,DCAP,CDEE,USRT,AMRO="")
 		;
 		Quit status
 		;
-margemEstaBloqueada(pData, pProduto) public {
-		Set margemBloqueada = $$$NO
-		;
-		Set X=$Get(^IPBMA(1))
-		Set DIBF=$Piece(X,"|",2)
-		;
- 		If (DIBF) && (pData '< DIBF) Set margemBloqueada = $$$YES
- 		If '$$grupoProdutoBloqueado(pProduto, pData) Set margemBloqueada = $$$NO
- 		;
-		Quit margemBloqueada
-
-}
-grupoProdutoBloqueado(pProduto, pData) Public {
-		;
-		Set margemGrupoBloqueada = $$$NO
-		;
-		Set COMB=$Extract(pProduto,1,2)
-		;
-		Set X=$Get(^IPBMA(1)),DIBF=$Piece(X,"|",2)
-		If (pData>=DIBF) {
-			If ($Data(^IPBMA(1,COMB))) {
-				Set margemGrupoBloqueada = $$$YES
-			}
-		}
-		;
-		Quit margemGrupoBloqueada
-}
-		;
 RCE		D ^IBSRCE Q
 RGP		D ^IBSRGP Q
 RAP		D ^IBSRAP Q
@@ -960,8 +931,8 @@ ADC		D ##class(cbpi.abadi.preco.sistemacusto.DadoBasicoCenarioCusto).atualizarTa
 ]]></Routine>
 
 
-<Routine name="IFFAFA3A" type="MAC" languagemode="0" timestamp="65440,62574.487375"><![CDATA[
-IFFAFA3A ;ATIVA/DESATIVA FATURAMENTO <V1.2-ELR-05/88> ; Última Alteração   alexlack 27/04/2018 23:23:24 ;Última Alteração   FLCARVALHO 02/03/2020 17:22:54
+<Routine name="IFFAFA3A" type="MAC" languagemode="0" timestamp="65392,32467.457663"><![CDATA[
+IFFAFA3A ;ATIVA/DESATIVA FATURAMENTO <V1.2-ELR-05/88> ; Última Alteração   alexlack 27/04/2018 23:23:24 ;Última Alteração   FLCARVALHO 14/01/2020 09:01:07
 	; 
 	#Include sistema.BibliotecaMacro 
 	#Include faturamento.Macro 
@@ -997,7 +968,6 @@ VEI ;VERIFICA ITENS
  S (LORE,FCIITEM,FCISMOV)=""
  S (IDDR,NREE,CNFE)="" ;Dados de exportação
  S CAL=0,VOL=0,SAI=0,INDR=0
- S DFAG="" ; <flcarvalho - GDTI-5608 - Projeto 5 casas e arredondamento>
  ;
  S X=^IFPED(CDEE,NPED),DENT=$P(X,"|",5),CCLI=$P(X,"|",2),TOPA=$P(X,"|",6),ICCR=$P(X,"|",16)
  S X=^IFPED(CDEE,NPED,0,ITPE),PRAZ=$P(X,"|",74) I PRAZ["/" D APR
@@ -1172,7 +1142,6 @@ VEI ;VERIFICA ITENS
  S $P(X,"|",113)=$G(VDCR),$P(X,"|",114)=$G(VACR)
  ;
  S $P(X,"|",115)=$G(MRGV) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Vendor - 2019/12>
- S $P(X,"|",116)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - Informação da diferença do ganho de ajuste/>
  ;
  S ^IFTFA(CDEE,$J,NPED,0,ITPE)=X,^IFCFA(NPRF,0,3,ITPE)=X
  ;
@@ -1896,8 +1865,8 @@ VPA D VPA^IBSRVP Q
 ]]></Routine>
 
 
-<Routine name="IFFAFA4D" type="MAC" languagemode="0" timestamp="65440,63051.315107"><![CDATA[
-IFFAFA4D ;ATIVA/DESATIVA FATURAMENTO <V1.2-ELR-05/88>  ;Última Alteração   FLCARVALHO 02/03/2020 17:30:51
+<Routine name="IFFAFA4D" type="MAC" languagemode="0" timestamp="65392,64049.203812"><![CDATA[
+IFFAFA4D ;ATIVA/DESATIVA FATURAMENTO <V1.2-ELR-05/88>  ;Última Alteração   FLCARVALHO 14/01/2020 09:34:29
  #Include sistema.BibliotecaMacro
  ;  
  #Dim ORIP as %StringD	; Representa o código da origem para consumo
@@ -2006,7 +1975,6 @@ GRI ;GRAVA ITEM
  ;</Aud - Projeto ELO>
  ;
  S MRGV=$P(X,"|",115) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Vendor - 2019/12>
- S DFAG=$P(X,"|",116) ; <flcarvalho - GDTI-5608 - Diferença do ganho de ajuste>
  ;
  I CPRO=12000000 D
  .S (PURE,CURE,MARU,ICMP,VPDP,VCDP,VPRP,VCRP,IPIS,ICOF,SUPJ,GARU,VDUF)=""
@@ -2221,7 +2189,6 @@ GRI ;GRAVA ITEM
  ;
  S $P(R,"|",186)=VUNV ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Vendor - 2019/08>
  S $P(R,"|",187)=$G(MRGV) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Vendor - 2019/12>
- S $P(R,"|",189)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - Projeto 5 casas decimais e arredondamento>
  ;
  S ^IFNFS(CDEE,DFAT,NONF,0,ITNF)=R
  ;
@@ -2779,8 +2746,8 @@ RPV D RPV^IBSR.preco.MrgDependencia(CCLI,PROUTIL,DFAT,.IPRM) Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT0" type="MAC" languagemode="0" timestamp="65441,35433.27173"><![CDATA[
-IFPEAT0 ;Atendimento a Cliente<V1.0-PNC-10/94> ; Oct 5 2004  2:23 PM ;ircÚltima Alteração   eliana 06/12/2017 23:51:39 ;Última Alteração   FLCARVALHO 03/03/2020 09:50:33
+<Routine name="IFPEAT0" type="MAC" languagemode="0" timestamp="65349,57721.166112"><![CDATA[
+IFPEAT0 ;Atendimento a Cliente<V1.0-PNC-10/94> ; Oct 5 2004  2:23 PM ;ircÚltima Alteração   eliana 06/12/2017 23:51:39 ;Última Alteração   FLCARVALHO 02/12/2019 16:02:01
 #Include sistema.BibliotecaMacro 
  ; 
 FES ;FUNCOES ESTENDIDAS
@@ -2816,7 +2783,6 @@ CCC ;CONSULTA CONTA CORRENTE
  N XCCLI,CCLI1,NCLI,TLCR,VLCR,VSAL,TV,NDV,TBA,COR,XTT,XPG,XLP,J,HORA,PR,AMES,DOLA,MG,LCOB,CZVC,CZVQ,CDEC,DMSC,CD,DEF,FIM 
  N IFRC,ITPE,L,LC,LIN,NPED,PR,QPED,SCLI,SPED,T,TAV,VUNP,TVSAF,TVSAA,VFRU,VITP,AIPI,CMOR,IINF,VFCI,VMVC,VMAX,VDEP,VDPC,VPSD,EFPP 
  S (CCLI1,NCLI,TLCR,VLCR,VSAL,TV,NDV,TBA,COR,J,HORA,PR,AMES,DOLA,MG,LCOB,CZVC,CZVQ,CDEC,CD,DEF,FIM,IFRC,ITPE,L,LC,LIN,NPED,PR,QPED,SCLI,SPED,T,TAV,VUNP,VUNV,TVSAF,TVSAA,VFRU,VITP,AIPI,DMSC)="" 
- S DFAG="" ; <flcarvalho - GDTI-5608 - 2020/03>
  S DEV=0,XTT=1,XPG=0,XLP="20",XTP="23",MG=0,BCOL=80 
  S J=$J,HORA=$P($$H^sistema.DOLLAR,",",2) 
  S X=^IBCLI(CCLI,0),NCLI=$P(X,"|",6),SCLI=$P(X,"|",22) 
@@ -3285,8 +3251,8 @@ CPE D CPE^IFPEAT41 Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT0E" type="MAC" languagemode="0" timestamp="65441,38316.005272"><![CDATA[
-IFPEAT0E ;Atendimento a Cliente <V1.0-PNC-10/94> ; Aug 2 2005  2:30 PM ;pnc ;Última Alteração   FLCARVALHO 03/03/2020 10:38:35
+<Routine name="IFPEAT0E" type="MAC" languagemode="0" timestamp="65386,70806.622688"><![CDATA[
+IFPEAT0E ;Atendimento a Cliente <V1.0-PNC-10/94> ; Aug 2 2005  2:30 PM ;pnc ;Última Alteração   FLCARVALHO 08/01/2020 19:40:06
 
  ///Pacote vfsantos_frete - Projeto ELO - 22/03/2018
 
@@ -3519,7 +3485,6 @@ TRI ;TRata Itens
  Set VULE=$P(RIT,"|",122),VFPI=$P(RIT,"|",124)
  Set VULN=$P(RIT,"|",123),VFPN=$P(RIT,"|",125)
  Set VUNV=$P(RIT,"|",126) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- Set DFAG=$P(RIT,"|",127) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S X=$P(RIT,"|",1,28) 
  F I=28:-1:1 I $P(RIT,"|",I)'?1"" Q
@@ -3641,7 +3606,6 @@ GRI ;GRava Item
  If $G(VULN)>0 Set $P(X,"|",123)=VULN,$P(X,"|",125)=VFPN
  ;
  I ($G(IFAV)=1)||($G(ISRV)=1) S $P(RIT,"|",133)=VUNV ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(RIT,"|",135)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S ^IFPED(CDEE,NPED,0,NITPE)=RIT
  ;
@@ -3834,8 +3798,8 @@ SMS2 D SEF^IBSR.faturamento.EnvioSMS(CDEE,NPED,2,0) Q  ;HPJ TAREFA Nº 000702B2 
 ]]></Routine>
 
 
-<Routine name="IFPEAT12" type="MAC" languagemode="0" timestamp="65441,38317.849363"><![CDATA[
-IFPEAT12 ;Atendimento a Cliente <V1.0-PNC-09/94> ; Última Alteração   RICARDOEB 26/04/2018 10:22:21 ;Última Alteração   FLCARVALHO 03/03/2020 10:38:37
+<Routine name="IFPEAT12" type="MAC" languagemode="0" timestamp="65392,32446.218019"><![CDATA[
+IFPEAT12 ;Atendimento a Cliente <V1.0-PNC-09/94> ; Última Alteração   RICARDOEB 26/04/2018 10:22:21 ;Última Alteração   FLCARVALHO 14/01/2020 09:00:46
 #Include sistema.BibliotecaMacro
  ;  
 LDP ;Le Dados Produtos 
@@ -3844,7 +3808,7 @@ LDP ;Le Dados Produtos
  ;
 LDP0 S (CPRO,NPRO,CUME,CIPI,CEMB,PBRU,AIPI,IPRT,ITRI,ITRP)="" 
  S (PADL,VUNP,VUNV,VULI,VFRU,QPED,IUBO,QKGC,LCOB,PRAZ,VTTB,IPDA,DMSC)="" 
- S (TAMO,DAMO,TAMB,IFRC,CMOR,IINF,VFCI,VMVC,VMAX,VDEP,IFET,VTDA,DFAG)="" 
+ S (TAMO,DAMO,TAMB,IFRC,CMOR,IINF,VFCI,VMVC,VMAX,VDEP,IFET,VTDA)="" 
  S (VDPC,VPSD,ICFT,NFSC,LUB,LFU,LVU,LPA,VOL,IPRI,EFPP,CCOA,NDRF,DNOR,ITRF)="" 
  S (TPCB,PZCB,NTAN,Q20C,NPEE,NIPE,VUDC)="" 
  ;<Amauri - Projeto 4%> Desligando versao anterior
@@ -4095,7 +4059,6 @@ RIT ;Recupera ITem
  S VUDC=$P(X,"|",120)
  ;
  I ($G(IFAV)=1)||($G(ISRV)=1) S VUNV=$P(X,"|",126) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(X,"|",127)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S X=^IBPRO(CPRO),NPRO=$P(X,"|",2),CUME=$P(X,"|",5),IPRT=$P(X,"|",20),CLPR=$P(X,"|",24),PBRU=$P(X,"|",9),CIPI=$P(X,"|",13),TPRO=$P(X,"|",21),IDCA=$P(X,"|",38)
  I $D(^IBCSP(1,CPRO)) S X=^IBCSP(1,CPRO),NPRO=$P(X,"|",4)
@@ -4107,7 +4070,7 @@ LCM ;Limpa CaMpos
  S (PADL,VULI,QPED,IUBO,QKGC,TAMO,DAMO,EFPP)="" 
  S (TAMB,CMOR,VFCI,VMVC,IINF,VFRU,VUNP,VUNV,VMAX)="" 
  S (VDEP,LCOB,PRAZ,VTTB,VDPC,VPSD,ICFT)=""
- S (AIPI,ITRP,TPCB,PZCB,VUDC,DFAG)="" 
+ S (AIPI,ITRP,TPCB,PZCB,VUDC)="" 
  ;<Amauri - Projeto 4%> Desligando versao anterior
  ;S (DFCI,NFCI,COIM,SFCI)="" ; ICMS 4% - Tarefa 007B0113 Eliana 09/2013 Revisão
  ;</Fim Amauri - Projeto 4%> Desligando versao anterior
@@ -4275,7 +4238,6 @@ LDR1 W /CUP(8,76),/ICC20,/RAW("Item: ") U 0:(256:"FC":$C(21,24)) $$$Read(R)  S:$
  S ITRF=R
  ;
  S VUNV=$P(REG,"|",186) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S DFAG=$P(REG,"|",189) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  // se a nota de faturamento não existir, criar na IFREF
  ;<AHZ>
@@ -4404,7 +4366,7 @@ converteProdutoExterno(idClienteFaturamento,itemExterno,dataFaturamento)  //todo
   }
   Quit produtoInterno
  ;</AHZ>  
- ;	 
+ ;	   
 SNF(CDEE,NDNF,DNOR,TMNF,SENF) N NONX D ^IBSRSN Q NONX			
 DCA(CPRO,ICCR) D ^IBSRCA Q
  ;
@@ -4428,8 +4390,8 @@ MTN D MTN^IFPEAT03 Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT15" type="MAC" languagemode="0" timestamp="65441,38319.666009"><![CDATA[
-IFPEAT15 ;Atendimento a Cliente<V1.0-PNC-09/94> ; Aug 11 2005  9:34 AM ;pncÚltima Alteração   douglass 20/04/2018 10:56:34 ;Última Alteração   FLCARVALHO 03/03/2020 10:38:39
+<Routine name="IFPEAT15" type="MAC" languagemode="0" timestamp="65384,79086.331385"><![CDATA[
+IFPEAT15 ;Atendimento a Cliente<V1.0-PNC-09/94> ; Aug 11 2005  9:34 AM ;pncÚltima Alteração   douglass 20/04/2018 10:56:34 ;Última Alteração   FLCARVALHO 06/01/2020 21:58:06
 #Include sistema.BibliotecaMacro
  ;
 CRP ;Confirma Retira Produto 
@@ -4667,7 +4629,6 @@ GRI ;GRava Item
  S $P(X,"|",121)=$G(VBOM) ; TAREFA 75941 - DSD - 04/2018
  ;
  S $P(X,"|",126)=$G(VUNV) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(X,"|",127)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S ^IFAUX(PART,0,ITPE)=X
  ;
@@ -4738,7 +4699,7 @@ IPPZ Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT46" type="MAC" languagemode="0" timestamp="65441,43248"><![CDATA[
+<Routine name="IFPEAT46" type="MAC" languagemode="0" timestamp="65331,58595.621955"><![CDATA[
 IFPEAT46 ;Atendimento a Cliente <V1.0-FFF-11/94> ; Última Alteração   mludwig 20/03/2018 15:37:20 ;Última Alteração   FLCARVALHO 14/11/2019 16:16:35
 #Include sistema.BibliotecaMacro
  ;
@@ -4859,7 +4820,6 @@ GIA ;Grava item no auxiliar
  If $G(VULN)>0 Set $P(X,"|",123)=VULN,$P(X,"|",125)=VFPN
  ;
  S $P(RIT,"|",126)=$G(VUNV) ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(RIT,"|",127)=$G(DFAG) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  Set ^IFAUX(PART,0,XITPE)=X
  //adicionado para gravar o PartNumber. <AHZ>
@@ -4906,8 +4866,8 @@ Z P IFPEAT46 X "ZS IFPEAT46" Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT6A" type="MAC" languagemode="0" timestamp="65441,37211.65831"><![CDATA[
-IFPEAT6A ;Atendimento a Cliente<V1.0-PNC-12/94> ; Jan 27 2005  9:41 AM ;dsdÚltima Alteração   mludwig 19/03/2018 21:21:07 ;Última Alteração   FLCARVALHO 03/03/2020 10:20:11
+<Routine name="IFPEAT6A" type="MAC" languagemode="0" timestamp="65245,58280.945381"><![CDATA[
+IFPEAT6A ;Atendimento a Cliente<V1.0-PNC-12/94> ; Jan 27 2005  9:41 AM ;dsdÚltima Alteração   mludwig 19/03/2018 21:21:07 ;Última Alteração   FLCARVALHO 20/08/2019 16:11:20
 #Include sistema.BibliotecaMacro
  ; 
 AIT ;Altera ITens
@@ -4940,7 +4900,7 @@ RFA20 S ITPE=""
  ;
 RFA21 ;Recalcula Frete e Preco Unitario de cada item
  S ITPE=$O(^IFPED(CDEE,NPED,0,ITPE)) I ITPE="" G RFAZ 
- S (CNOP,CNOS,CTOP,CDOP,CPRO,IPRI,QPED,VUNP,VUNV,VUNI,IPDG,DMSC,DFAG)="" 
+ S (CNOP,CNOS,CTOP,CDOP,CPRO,IPRI,QPED,VUNP,VUNV,VUNI,IPDG,DMSC)="" 
  S (VFRU,DVFRU,VUPF,IUBO,IFRC,IATP,AQPED,ISUE,ISUD,ISUQ,ISUC,ISUV,ISUP,ILID)="" 
  S (ILIV,ILIP,NPRO,IPRT,EEMB,CNEG,QDIB,IALT,CUFE,CMUE,VMVC,IINF)="" 
  S (CMOR,VFCI,VMAX,VDEP,VTTB,IPDA,VDPC,VPSD,ICFT,NFSC,EFPP,CCOA)="" 
@@ -5050,14 +5010,14 @@ GIA D GIA^IFPEAT6N Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT6B" type="MAC" languagemode="0" timestamp="65441,37264.294706"><![CDATA[
-IFPEAT6B ;Atendimento a Cliente<V1.0-PNC-12/94> ;Última Alteração   FLCARVALHO 03/03/2020 10:21:04
+<Routine name="IFPEAT6B" type="MAC" languagemode="0" timestamp="65294,30640.205141"><![CDATA[
+IFPEAT6B ;Atendimento a Cliente<V1.0-PNC-12/94> ;Última Alteração   FLCARVALHO 08/10/2019 08:30:40
 #Include sistema.BibliotecaMacro
  ;   
 INI ;INclui Item
  S (ITPE,XCPRO,XCIPI,XITRP,XAIPI,XITRI,XTPRO,XEEMB,CNOP,CNOS,CTOP)="" 
  S (CDOP,CNEG,IALT,CPRO,NPRO,IATP,IADC,CEMB,EEMB,NDRF,DNOR,ITRF)="" 
- S (CLPR,ITRP,AIPI,ITRI,EMPE,TPRO,IPRT,CIPI,EMBA,QPED,VUNP,VUNV,DFAG)="" 
+ S (CLPR,ITRP,AIPI,ITRI,EMPE,TPRO,IPRT,CIPI,EMBA,QPED,VUNP,VUNV)="" 
  S (VUNI,VFRU,DVFRU,IUBO,IPRI,ICCR,IPDG,IFRC,YITPE,CMUE,CUFE,CUFD,PTAU)="" 
  S (ITFL,PADL,VULI,VMVC,IINF,CMOR,VFCI,VDEP,VMAX)="" 
  S (VTTB,VDPC,VPSD,ICFT,NFSC,EFPP,CCOA,Q20C,NTAN)="" 
@@ -5235,8 +5195,8 @@ VPA D VPA^IBSRVP Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT6F" type="MAC" languagemode="0" timestamp="65441,38321.77442"><![CDATA[
-IFPEAT6F ;Atendimento a Cliente<V1.0-PNC-01/95> ; Última Alteração   amaurid 23/04/2018 20:47:55 ;Última Alteração   FLCARVALHO 03/03/2020 10:38:41
+<Routine name="IFPEAT6F" type="MAC" languagemode="0" timestamp="65331,41704.117029"><![CDATA[
+IFPEAT6F ;Atendimento a Cliente<V1.0-PNC-01/95> ; Última Alteração   amaurid 23/04/2018 20:47:55 ;Última Alteração   FLCARVALHO 14/11/2019 11:35:04
 #Include sistema.BibliotecaMacro
  ; 
 AII ;Armazenamento de Item Incluido 
@@ -5355,7 +5315,6 @@ GII ;Grava Item Incluido
  S $P(X,"|",117)=FCIF
  ;
  I ($G(IFAV)=1)||($G(ISRV)=1) S $P(X,"|",133)=VUNV ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(X,"|",135)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S ^IFPED(CDEE,NPED,0,ITPE)=X
  ;
@@ -5564,13 +5523,13 @@ RestOperac
 ]]></Routine>
 
 
-<Routine name="IFPEAT6K" type="MAC" languagemode="0" timestamp="65441,37514.748529"><![CDATA[
-IFPEAT6K ;ALTERA PEDIDO<V1.1-FFF-01/95> ;Última Alteração   FLCARVALHO 03/03/2020 10:25:14
+<Routine name="IFPEAT6K" type="MAC" languagemode="0" timestamp="65392,32485.956692"><![CDATA[
+IFPEAT6K ;ALTERA PEDIDO<V1.1-FFF-01/95> ;Última Alteração   FLCARVALHO 14/01/2020 09:01:25
 #Include sistema.BibliotecaMacro
  ; 
 ALI ;ALTERA ITEM
  ;
- S (CNOP,CNOS,CTOP,CDOP,CPRO,IPRI,QPED,VUNP,VUNV,VUNI,IPDG,DFAG)="" 
+ S (CNOP,CNOS,CTOP,CDOP,CPRO,IPRI,QPED,VUNP,VUNV,VUNI,IPDG)="" 
  S (VFRU,DVFRU,IUBO,IFRC,IATP,AQPED,ISUD,ISUQ,ISUC,ISUV,ISUP,ILID)="" 
  S (ILIV,ILIP,NPRO,IPRT,EEMB,CNEG,IALT,CUFE,CMUE,VMVC,IINF,DMSC)="" 
  S (CMOR,VFCI,VMAX,VDEP,VTTB,IPDA,VDPC,VPSD,ICFT,NFSC,EFPP,CCOA)="" 
@@ -5770,8 +5729,8 @@ Z P IFPEAT6K X "ZS IFPEAT6K" Q
 ]]></Routine>
 
 
-<Routine name="IFPEAT6N" type="MAC" languagemode="0" timestamp="65441,38313.480198"><![CDATA[
-IFPEAT6N ;ALTERA PEDIDO<V1.0-FFF-01/95> ; Apr 4 2005  2:50 PM ;pnc ;Última Alteração   FLCARVALHO 03/03/2020 10:38:33
+<Routine name="IFPEAT6N" type="MAC" languagemode="0" timestamp="65405,55554.478335"><![CDATA[
+IFPEAT6N ;ALTERA PEDIDO<V1.0-FFF-01/95> ; Apr 4 2005  2:50 PM ;pnc ;Última Alteração   beatriz.alves 27/01/2020 15:25:54
 #Include sistema.BibliotecaMacro
  ;  
 AIA ;Armazenamento de Item Alterado  
@@ -5882,7 +5841,6 @@ GIA0 ;
  S $P(X,"|",117)=FCIF
  ; 
  I ($G(IFAV)=1)||($G(ISRV)=1) S $P(X,"|",133)=VUNV ; <flcarvalho - GDTI-4701 - Tarefa-112791 - Faturamento antecipado Vendor - 2019/08>
- S $P(X,"|",135)=$J($G(DFAG),0,2) ; <flcarvalho - GDTI-5608 - 2020/03 - Diferença entre o valor unitário original e o ganho de ajuste (arredondamento)>
  ;
  S ^IFPED(CDEE,NPED,0,ITPE)=X 
  ;
@@ -6123,10 +6081,9 @@ RestOperac ;Restrição Operacional - SOP
 ]]></Routine>
 
 
-<Routine name="IPCABM" type="MAC" languagemode="0" timestamp="65421,63872.125131"><![CDATA[
-IPCABM ;Bloqueia/Libera Manutencao em Precos ; Sep 26 2005  9:40 AM ;dsdÚltima Alteração   VICTORSG 26/01/2018 09:51:30 ;Última Alteração   FLCARVALHO 12/02/2020 17:44:32
+<Routine name="IPCABM" type="MAC" languagemode="0" timestamp="60715,10604"><![CDATA[
+IPCABM ;Bloqueia/Libera Manutencao em Precos ; Sep 26 2005  9:40 AM ;dsd
 #Include sistema.BibliotecaMacro
-#define setCorpoEmail(%postreamMail,%pstrTexto) Do %postreamMail.Write(%pstrTexto)
  ;
 MCO ;Modulo de COntrole
  S $ZT="^sistema.err" 
@@ -6140,46 +6097,24 @@ MCO ;Modulo de COntrole
  S DIBF="" 
  ;Libera Bloqueio
  I '$D(^IPBMA(1)) G MCO1 
- K VETCPRO D DGP ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem/>
- D EBL
+ D EBL 
  S THBL=2 
  D COL I FIM G MCOZ 
  D LIB 
- G MCO 
+ G MCOZ 
  ;Bloqueia
-MCO1 
- K VETCPRO D DGP ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem/>
- D LDB
- I FIM G MCOZ
- D LGP
- I FIM S FIM=0 G MCO1
+MCO1 D LDB I FIM G MCOZ 
  S THBL=1 
  D COB I FIM S FIM=0 G MCO1 
  D BLO 
 MCOZ I $D(MUDA),MUDA S %K=",ROTI" D ^GAP.GARKG G ^@ROTI 
  Q  
  ;
-MTE ;Monta TEla para bloqueio
+MTE ;Monta TEla
  D ^IBSRTE 
- I $D(^IPBMA(1)) G MTE1
- ;
  W /CUP(4,1),/ICC28,/RAW("Bloqueia manutencao nas tabelas de preco a partir de: ["),/ICC29,/CUP(4,66),/ICC28,/RAW("]") 
- ;
-MTE1
- D MTG
- W /CUP(20,75),/ICC29,/RAW("  "),/ICC28
+ W /CUP(6,75),/ICC29,/RAW("  "),/ICC28 
 MTEZ Q  
- ;
- ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem> ######################################################################
-MTG ; Monta tela grupo de produto a ser bloqueado
- W /CUP(6,1),/ICC28,/RAW("Para os grupos de produto (APCO):")
- W /CUP(7,1),/ICC28,/RAW("Gasolina:["),/ICC29,/CUP(7,14),/ICC28,/RAW("] ")
- W /CUP(7,17),/ICC28,/RAW("Álcool:["),/ICC29,/CUP(7,28),/ICC28,/RAW("] ")
- W /CUP(7,31),/ICC28,/RAW("Diesel:["),/ICC29,/CUP(7,42),/ICC28,/RAW("] ")
- W /CUP(7,45),/ICC28,/RAW("Querosene:["),/ICC29,/CUP(7,59),/ICC28,/RAW("] ")
- W /CUP(7,62),/ICC28,/RAW("Óleo Comb.:["),/ICC29,/CUP(7,77),/ICC28,/RAW("] ")
-MTGZ Q
- ; </flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem> ######################################################################
  ;
 EBL ;Exibe BLoqueio
  S X=^IPBMA(1),CARG=$P(X,"|",1),DIBF=$P(X,"|",2) 
@@ -6189,9 +6124,9 @@ EBL ;Exibe BLoqueio
  S X=$G(^%GAU(USRT)),NUSRT=$P(X,"|",2) 
  S DAT=DIBF K %DI D DT^sistema.DOLLAR S XDIBF=$E(%X+100,2,3)_"/"_$E(%Z+100,2,3)_"/"_%Y 
  S DAT=DATT K %DI D DT^sistema.DOLLAR S DATT=$E(%X+100,2,3)_"/"_$E(%Z+100,2,3)_"/"_%Y 
- W /CUP(4,1),/ICC28,/RAW("Manutencao bloqueada a partir de"),/ICC29,/RAW(XDIBF) 
+ W /CUP(7,1),/ICC28,/RAW("Manutencao bloqueada a partir de"),/ICC29,/RAW(XDIBF) 
  W /CUP(9,1),/ICC28,/RAW("Bloqueado no Dia:"),/ICC29,/RAW(DATT),/ICC28,/RAW("as"),/ICC29,/RAW(HORA) 
- W /CUP(12,1),/ICC28,/RAW("             Por:"),/ICC29,/RAW(USRT_" - "_NUSRT) 
+ W /CUP(10,1),/ICC28,/RAW("             Por:"),/ICC29,/RAW(USRT_" - "_NUSRT) 
 EBLZ Q  
  ;
 LDB ;Le Data a ser Bloqueada
@@ -6208,81 +6143,6 @@ LDB1 W /CUP(4,57),/ICC24,/CON U 0:(256:"FC":$C(21,24)) $$$Read(R)  S:$A($ZB)=21!
  W /CUP(4,58) S %DI="" D DT^sistema.DOLLAR $$$Read(X)  
 LDBZ Q  
  ;
- ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem> ######################################################################
-DGP ; Define Grupo de Produto e linha e coluna de exibição
- ;
- S XCOMB=1,COMB=11,XLIN=7,XCOL=13 ;"GAS"
- D RGP
- ;
- S XCOMB=2,COMB=10,XLIN=7,XCOL=27 ;"ALC"
- D RGP
- ;
- S XCOMB=3,COMB=15,XLIN=7,XCOL=41 ;"DIE"
- D RGP
- ;
- S XCOMB=4,COMB=14,XLIN=7,XCOL=58 ;"QUE"
- D RGP
- ;
- S XCOMB=5,COMB=17,XLIN=7,XCOL=76 ;"OCB"
- D RGP
- ;
- S XCOMB=""
-DGP1 ; Exibe opção para seleção do grupo de produto
- S XCOMB=$O(VETCPRO(XCOMB)) G:XCOMB="" DGPZ
- S X=VETCPRO(XCOMB)
- S R=$P(X,"|",1),XLIN=$P(X,"|",2),XCOL=$P(X,"|",3)
- D EGP
- G DGP1
- ;
-DGPZ Q
- ;
-RGP ; Recupera grupo de produto e monta o vetor
- ; Entrada:
- ;	COMB,XCOMB,XLIN,XCOL
- S XOPCAO="S"
- S X=$G(VETCPRO(XCOMB))
- I X="" S X=XOPCAO_"|"_XLIN_"|"_XCOL_"|"_XCOMB
- ;
- I '$D(^IPBMA(1)) G RGP1
- I '$D(^IPBMA(1,COMB)) S XOPCAO="N"
-RGP1
- S $P(X,"|",1)=XOPCAO,$P(X,"|",4)=COMB
- S VETCPRO(XCOMB)=X
-RGPZ Q
- ;
-EGP ; Exibe campo grupo produto
- W /CUP(XLIN,XCOL),/ICC24,/RAW(R) $$$Read(R)
-EGPZ Q
- ;
-LGP ; Lê Grupo de produto
- ;
-LGP1
- S XCOMB="",DIRE=1
-LGP2
- S XCOMB=$O(VETCPRO(XCOMB),DIRE) G:XCOMB="" LGPZ
- S X=VETCPRO(XCOMB)
- S (R,XR)=$P(X,"|",1),XLIN=$P(X,"|",2),XCOL=$P(X,"|",3)
- S FIM="" 
- D EGP,TCG
- I FIM=1 G LGP2
- S X=VETCPRO(XCOMB),$P(X,"|",1)=R,VETCPRO(XCOMB)=X
- G LGP2
- ;
-LGPZ Q
- ;
-TCG ; Trata campo grupo de produto
- S DIRE=1
- W /CUP(XLIN,XCOL),/CON U 0:(256:"FC":$C(21,24)) $$$Read(R)  S:$A($ZB)=21!($A($ZB)=24) R=$ZB W:$A($ZB)=24 /ICC24 U 0:(256:"SFC":$C(21,24)) W /COFF,/ICC20,/ICC13 
- I R?1"" S R=XR
- I ($A(R)=21) S FIM=1,DIRE=-1 G TCGZ 
- I R?1C.E S MS=3 D ^GAP.GAREM G TCG
- I R?1"?" S MS=4,ER="" D ^GAP.GAREM G TCG
- I ",S,N,"'[R S MS=4 D ^GAP.GAREM G TCG
- ;
-TCGZ Q
- ;
- ; </flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem> ######################################################################
- ;
 COB ;Confirma O Bloqueio
  S FIM=0 
  W /CUP(6,76),/ICC20,/RAW("OK para bloquear? S// ") U 0:(256:"FC":$C(21,24)) $$$Read(R)  S:$A($ZB)=21!($A($ZB)=24) R=$ZB W:$A($ZB)=24 /ICC24 U 0:(256:"SFC":$C(21,24)) W /ICC20,/ICC13 
@@ -6294,34 +6154,12 @@ COBZ Q
 BLO ;armazena BLOqueio da dependencia
  W /CUP(6,76),/ICC20,/RAW("Armazenando bloqueio...") 
  S DATA=$P($$H^sistema.DOLLAR,",",1),HORA=$P($$H^sistema.DOLLAR,",",2),USRT=%US 
- S CARG=DATA_","_HORA_","_USRT
- ;
+ S CARG=DATA_","_HORA_","_USRT 
+ S ^IPBMA("LOG",DIBF,DATA,HORA,USRT)=THBL 
  S ^IPBMA(1)=CARG_"|"_DIBF 
- S ^IPBMA("LOG",DIBF,DATA,HORA,USRT)=THBL
- ;
- D ABG
- ;
- W /RAW("OK") $$$ReadT(X,2)  W /ICC20,/ICC13
- ;
- S EMAIL="" 
- D TRE 
+ W /RAW("OK") $$$ReadT(X,2)  W /ICC20,/ICC13 
 BLOZ Q  
  ;        
-ABG ; Armazena Bloqueio por Grupo
- S XCOMB=""
-ABG1
- S XCOMB=$O(VETCPRO(XCOMB)) G:XCOMB="" ABGZ
- S X=VETCPRO(XCOMB)
- S XOPCAO=$P(X,"|",1),XLIN=$P(X,"|",2),XCOL=$P(X,"|",3),COMB=$P(X,"|",4)
- I XOPCAO'="S" G ABG1
- ;
- I THBL=1 S ^IPBMA(1,COMB)=THBL
- S ^IPBMA("LOG",DIBF,DATA,HORA,USRT,COMB)=THBL
- ;
- G ABG1
- ;
-ABGZ Q
- ;
 COL ;COnfirma Liberacao
  S FIM=0 
  W /CUP(6,76),/ICC20,/RAW("Manutencao bloqueada na data acima. OK para liberar? ") U 0:(256:"FC":$C(21,24)) $$$Read(R)  S:$A($ZB)=21!($A($ZB)=24) R=$ZB W:$A($ZB)=24 /ICC24 U 0:(256:"SFC":$C(21,24)) W /ICC20,/ICC13 
@@ -6335,106 +6173,17 @@ LIB ;LIBera manutencao
  S CARG=DATA_","_HORA_","_USRT 
  S X=^IPBMA(1),DIBF=$P(X,"|",2) 
  S ^IPBMA("LOG",DIBF,DATA,HORA,USRT)=THBL 
- K ^IPBMA(1)
- ;
- D ABG
- ;
+ K ^IPBMA(1) 
  W /RAW("OK") $$$ReadT(X,2)  W /ICC20,/ICC13 
- S EMAIL="" 
- D TRE
 LIBZ Q  
  ;
-TRE ;Transmite E-Mail
- ;
- //<Amauri - Abril/2013>
- // Tarefa 0067D09D - Projeto Obsolescência de Interface - Envio de Email
- //
- New strEmailsTo,strEmailFrom,strEmailsCC,strEmailsCO,strAssunto
- New strTitulo,oStreamMail,strAnexos,strURL,arrayFiles,oHTTPRequest
- ;
- Set oStreamMail=##class(%Library.GlobalCharacterStream).%New()
- ;
- S DIR=$$$ZU12()
- ;I DIR="/adm/des/" G TREZ 
- S MAIL="abadi@ipiranga.com.br;centralfni@ipiranga.com.br;centroop@ipiranga.com.br"
- S CONTATO="abadi@ipiranga.com.br"
- ; HPJ TAREFA 004EBCCE 11/2013
- S (UMAIL,UCONTATO,USRT)=""
- F  S USRT=$O(^ISGRU("AVISO_ALTERA-PA",USRT)) Q:USRT?1""  D
-   .S X=$G(^%GAU(USRT)),MNEU=$P(X,"|",17),UMAIL=$P(X,"|",24)
-   .I UMAIL?1"",MNEU'?1"" S UMAIL=MNEU_"@ipiranga.com.br"
-   .S UCONTATO=UCONTATO_UMAIL_";"
- S MAIL=MAIL_";"_UCONTATO  
- I $$$Ambiente'=$$$AmbienteProducao S MAIL="flcarvalho@ipiranga.com.br"
- ;
- Set strEmailsTo=MAIL
- Set strEmailFrom=CONTATO
- ;
- Set strAssunto=$S(THBL=1:"Bloqueio",1:"Liberacao")_" das Tabelas de Preços ABADI (PCO/CA/BM)"
- ;
- S NREG="***************************************************************" D GAU 
- S NREG="De:          CIA BRASILEIRA DE PETROLEO IPIRANGA" D GAU 
- S NREG="Para:        Central de Informatica" D GAU 
- S NREG="***************************************************************" D GAU 
- S NREG="Tabelas de Preços no ABADI "_$S(THBL=1:"bloqueado",1:"liberado")_" por "_%US_"." D GAU 
- S NREG="Data efetiva de bloqueio: "_$$FDE(DIBF) D GAU
- S NREG=EMAIL D GAU
- ;
- S XCOMB=""
-TRE1
- F XCOMB=$O(VETCPRO(XCOMB)) G:XCOMB="" TRE2
- S X=VETCPRO(XCOMB)
- S XOPCAO=$P(X,"|",1),XLIN=$P(X,"|",2),XCOL=$P(X,"|",3),COMB=$P(X,"|",4)
- ;
- S NREG=$Case(COMB,11:"GASOLINA",10:"ÁLCOOL",15:"DIESEL",14:"QUEROSENE",17:"ÓLEO COMBUSTÍVEL",:"")
- S NREG=NREG_" - "_$Case(THBL,1:$Case(XOPCAO,"S":"BLOQUEADO",:"LIBERADO"),:"LIBERADO")
- D GAU
- ;
- G TRE1
- ;
-TRE2 
- ;
- Set strTitulo=""
- Set strEmailsCC=""
- Set strEmailsCO=""
- Set strAnexos=""
- Set strURL=""
- Set arrayFiles=""
- Set oHTTPRequest=""
- ;
- Set OK=$$enviaEmail^basico.SEEM(strEmailsTo,strEmailFrom,strAssunto,strTitulo,oStreamMail,strEmailsCC,strEmailsCO)
- ;
- Do oStreamMail.%Close()
- ;
- //
- //</Amauri>
- ;
-TREZ Q  
- ;
-GAU ;Grava Arquivo Unix
- //
- //<Amauri - Abril/2013>
- // Tarefa 0067D09D - Projeto Obsolescência de Interface - Envio de Email
- //
- $$$setCorpoEmail(oStreamMail,NREG)
- $$$setCorpoEmail(oStreamMail,"<BR>")
- //
- //</Amauri>
- // 
-GAUZ Q  
- ;
-FDE(X) ;Formata Data Externa
- I X?1"" G FDEZ 
- K %DI S DAT=X D DT^sistema.DOLLAR 
- S X=$E(100+%X,2,3)_"/"_$E(100+%Z,2,3)_"/"_%Y 
-FDEZ Q X 
-
 Z P IPCABM X "ZS IPCABM" Q  
+ 
 ]]></Routine>
 
 
-<Routine name="IPHIBM1" type="MAC" languagemode="0" timestamp="65421,62399.939087"><![CDATA[
-IPHIBM1 ;Bloqueio/Liberacao de Manutencao em Precos; Oct 28 1999  9:01 AM ; Oct 28 1999  9:13 AM ;gprÚltima Alteração  alexlack 16/11/2006 11:33:43 ;Última Alteração   FLCARVALHO 12/02/2020 17:19:59
+<Routine name="IPHIBM1" type="MAC" languagemode="0" timestamp="60715,10605"><![CDATA[
+IPHIBM1 ;Bloqueio/Liberacao de Manutencao em Precos; Oct 28 1999  9:01 AM ; Oct 28 1999  9:13 AM ;gpr
 #Include sistema.BibliotecaMacro
  ;
 COR ;COntrole de Relatorio
@@ -6492,18 +6241,8 @@ IMP4 S USRT=$O(^IPBMA("LOG",DIBF,DATA,HORA,USRT)) I USRT?1"" G IMP3
  I NID S NID=0 S DAT=DIBF,%DI="" D DT^sistema.DOLLAR 
  W /ICSP(10),/RAW(XTHBL) 
  S DAT=DATA,%DI="" W /ICSP(22) D DT^sistema.DOLLAR 
- W /ICSP(32),/RAW(XHORA),/ICSP(42),/RAW((USRT_" - "_$E(NUSRT,1,19)))
- ; <flcarvalho - GDTI-5783 - Tarefa-122448 - Bloqueio por margem>
- S (COMB,XCOMB,XCOMBDESC)=""
-IMP5
- S COMB=$O(^IPBMA("LOG",DIBF,DATA,HORA,USRT,COMB)) I COMB="" G IMP6
- S XCOMB=$Case(COMB,11:"G",10:"A",15:"D",14:"Q",17:"O",:"")
- S XCOMBDESC=$Case(XCOMBDESC,"":XCOMBDESC_XCOMB,:XCOMBDESC_"/"_XCOMB)
- G IMP5
-IMP6
- W /ICSP(70),/RAW(XCOMBDESC)
- ; </flcarvalho - GDTI-5783 - Tarefa-122448 - Projeto arredondamento na 5a casa>
- G IMP4
+ W /ICSP(32),/RAW(XHORA),/ICSP(42),/RAW((USRT_" - "_$E(NUSRT,1,30))) 
+ G IMP4 
 IMPZ Q  
  ;
 CAB ;CABecalho de 80 colunas
@@ -6520,21 +6259,21 @@ CAB1 ;Impressora
  S C=(80-$L(TIT))\2 
  W /CR(2),/ICSP(C),/RAW(TIT) 
  W /CR(2) 
-CAB2 
- W /RAW("Data Fat  Ocorrencia    Data      Hora             Usuario             GR.PROD. "),/CR(1) 
- W /RAW("========  ==========  ========  ========  =========================  ===========") 
-      ; "123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789."
-      ; "         10        20        30        40        50        60        70        80"
+CAB2 W /RAW("Data Fat  Ocorrencia    Data      Hora                   Usuario"),/CR(1) 
+ W /RAW("========  ==========  ========  ========  ====================================") 
+ ; "123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789."
+ ; "         10        20        30        40        50        60        70        80"
 CABZ Q  
  ;
 Z P IPHIBM1 X "ZS IPHIBM1" Q  
+ 
 ]]></Routine>
 
 
 <Class name="cbpi.abadi.preco.sistemacusto.Operacao">
 <IncludeCode>sistema.BibliotecaMacro</IncludeCode>
 <Super>%RegisteredObject</Super>
-<TimeChanged>65422,41176.477195</TimeChanged>
+<TimeChanged>65168,34962.776084</TimeChanged>
 <TimeCreated>64897,56673.376442</TimeCreated>
 
 <Method name="realizarBloqueios">
@@ -6825,89 +6564,23 @@ Copiado de IPCABM</Description>
  	Set DATA=$Piece($$H^sistema.DOLLAR,",",1),HORA=$Piece($$H^sistema.DOLLAR,",",2),USRT=pUsuario 
  	Set CARG=DATA_","_HORA_","_USRT
  	Set temBloqueioMargem = 0
- 	Set EMAIL=""
  	;
- 	If (pDataBloqueio >= DATA) {
-	 	;
-	 	If $Data(^IPBMA(1)) {
-		 	Set X=^IPBMA(1)
-		 	Set dataBloqueioAtual=$Piece(X,"|",2)
-		 	If (dataBloqueioAtual<=pDataBloqueio) {
-			 	Set temBloqueioMargem = 1
-		 	}
-	 	}
-	 	;
-	 	If (($$$ISOK(status) && 'temBloqueioMargem)||((temBloqueioMargem=1)&&(dataBloqueioAtual=pDataBloqueio))) {
-		 	Set ^IPBMA("LOG",pDataBloqueio,DATA,HORA,USRT)=1 
-		 	Set ^IPBMA(1)=CARG_"|"_pDataBloqueio
-		 	Set status=..atualizarBloqueioMargemGrupo(pDataBloqueio, pUsuario, 1, .EMAIL)
-		 	Set status=..enviarEmailMargem(1,pDataBloqueio,EMAIL,pUsuario)
+ 	If $Data(^IPBMA(1)) {
+	 	Set X=^IPBMA(1)
+	 	Set dataBloqueioAtual=$Piece(X,"|",2)
+	 	If (dataBloqueioAtual<=pDataBloqueio) {
+		 	Set temBloqueioMargem = 1
 	 	}
  	}
- 	Else {
-	 	Set status = $$$ERROR(5001,"Data de bloqueio de margem não pode ser menor que a data atual.")
+ 	;
+ 	If ($$$ISOK(status) && 'temBloqueioMargem) {
+	 	Set ^IPBMA("LOG",pDataBloqueio,DATA,HORA,USRT)=1 
+	 	Set ^IPBMA(1)=CARG_"|"_pDataBloqueio 
+	 	Set EMAIL="Bloqueadas:" 
+	 	Set status=..enviarEmailMargem(1,pDataBloqueio,EMAIL,pUsuario)
  	}
  	;
  	Quit status
-]]></Implementation>
-</Method>
-
-<Method name="atualizarBloqueioMargemGrupo">
-<Description>
-Bloquear margem por grupo de produto
-Quando o bloqueio for feito pelo sistema de margens, será bloqueado todos os grupos</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[pDataBloqueio:%Integer="",pUsuario:%String="",pTipoBloqueio,&pEMAIL:%String]]></FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	#Dim COMB,DATA,HORA,USRT,VETGRP,DIBF,status
-	;
-	Set status=$$$OK
- 	Set DATA=$Piece($$H^sistema.DOLLAR,",",1),HORA=$Piece($$H^sistema.DOLLAR,",",2)
- 	Set USRT=pUsuario,DIBF=pDataBloqueio
- 	;
- 	Kill VETGRP
- 	Do ..definirVetorGrupo(.VETGRP)
- 	;
- 	If $Data(VETGRP) {
-	 	Set COMB=""
-	 	For {
-		 	Set COMB=$Order(VETGRP(COMB))
-		 	Quit:(COMB="")
-		 	;
-		 	If (pTipoBloqueio=1) {
-		 		Set ^IPBMA(1,COMB)=pTipoBloqueio
-		 	}
-	 		Set ^IPBMA("LOG",DIBF,DATA,HORA,USRT,COMB)=pTipoBloqueio
-	 		;
-	 		Set pEMAIL = pEMAIL _ "<br/>" _ ..obterDescricaoGrupoProduto(COMB) _ " - "_$Case(pTipoBloqueio,1:"BLOQUEADO",:"LIBERADO")
-	 	}
- 	}
- 	Quit status
-]]></Implementation>
-</Method>
-
-<Method name="definirVetorGrupo">
-<Description>
-Define vetor de grupo de produto</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[&VETGRP]]></FormalSpec>
-<Implementation><![CDATA[
-	S VETGRP(11)="" ; GAS
-	S VETGRP(10)="" ; ALC
-	S VETGRP(15)="" ; DIE
-	S VETGRP(14)="" ; QUE
-	S VETGRP(17)="" ; OLC
-]]></Implementation>
-</Method>
-
-<Method name="obterDescricaoGrupoProduto">
-<Description>
-Obter a descrição por grupo de produto</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pCodigo:%Integer</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	Quit $Case(pCodigo,11:"GASOLINA",10:"ÁLCOOL",15:"DIESEL",14:"QUEROSENE",17:"ÓLEO COMBUSTÍVEL",:"")
 ]]></Implementation>
 </Method>
 
@@ -6922,14 +6595,13 @@ Copiado de IPCABM</Description>
 	Set DATA=$Piece($$H^sistema.DOLLAR,",",1)
 	Set HORA=$Piece($$H^sistema.DOLLAR,",",2)
 	Set USRT=pUsuario 
-	Set EMAIL=""
 	Set CARG=DATA_","_HORA_","_USRT 
 	Set X=$G(^IPBMA(1))
 	If (X '= "") {
 		Set DIBF=$Piece(X,"|",2) 
 		Set ^IPBMA("LOG",DIBF,DATA,HORA,USRT)=2 
 		Kill ^IPBMA(1) 
-		Set status=..atualizarBloqueioMargemGrupo(DIBF, pUsuario, 2, .EMAIL)
+		Set EMAIL="Liberadas:"
 		If DIBF'="" {
 			Set status=..enviarEmailMargem(2,DIBF,EMAIL,pUsuario)
 		}
@@ -7327,7 +6999,7 @@ Método invocado para enviar e-mail quando o ABADI não conseguir atualizar todo
 </Class>
 
 
-<Project name="flcarvalho_123290" LastModified="2020-03-03 12:03:51.921889">
+<Project name="flcarvalho_123290" LastModified="2020-03-03 11:04:18.798565">
   <Items>
     <ProjectItem name="IBSR.preco.MrgPrzPrEPontual.MAC" type="MAC"></ProjectItem>
     <ProjectItem name="IFFAFA3A.MAC" type="MAC"></ProjectItem>
