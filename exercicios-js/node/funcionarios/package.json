@@ -1,0 +1,33 @@
+{
+  "name": "funcionarios",
+  "version": "0.0.5",
+  "description": "Projeto de funcionários",
+  "main": "funcionarios.js",
+  "scripts": {
+    "start": "nodemon",
+    "dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "func",
+    "funcionario"
+  ],
+  "author": "Felipe Carvalho",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2"
+  },
+  "languages": [
+    {
+      "id": "abc",
+      "extensions": [".abc"]
+    }
+  ],
+  "grammar": [
+    {
+      "language": "foo",
+      "scopeName": "source.abc",
+      "path": "abcgrammar.json"
+    }
+  ]
+}
