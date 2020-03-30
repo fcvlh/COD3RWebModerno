@@ -1,0 +1,5 @@
+saudacao1 = require('./passandoParametros')('Ana','João','José')
+saudacao2 = require('./passandoParametros')('Ana','João','Maria')
+console.log(saudacao1)
+console.log(saudacao2)
+console.log(saudacao1)

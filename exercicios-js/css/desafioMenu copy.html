@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Desafio Menu</title>
+    <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        * {
+            overflow: hidden;
+        }
+
+        .cabecalho {
+            position: absolute;
+            background-color: #2e2e2e;
+            width: 100%;
+            font-size: 26px;
+            font-family: 'Oswald';
+        }
+
+        .logo {
+            width: 380px;
+            margin: 5px;
+        }
+
+        .logo,
+        .logo img {
+            height: 70px;
+        }
+
+
+        .menu {
+            position: relative;
+            top: 10px;
+            display: inline-block;
+            /* border: 2px solid white; */
+        }
+
+        .menu-toggle {
+            display: none;
+            left: 450px;
+            top: 25px;
+            padding: 0;
+            margin: 25px;
+        }
+
+        .logo {
+            float: left;
+        }
+
+        .menu ul {
+            list-style-type: none;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .menu ul li {
+            float: left;
+        }
+
+        .menu ul li a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+        }
+
+        .menu ul li a:hover {
+            background-color: skyblue;
+            color: #181515;
+        }
+
+        .autenticacao {
+            display: block;
+            float: right;
+        }
+
+        .autenticacao a {
+            text-decoration: none;
+            color: white;
+            padding: 15px;
+        }
+
+        .autenticacao .destaque {
+            border-radius: 25px;
+            background-color: red;
+            box-shadow: snow;
+        }
+
+        @media(max-width: 780px) {
+            .menu {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media(max-width: 960px) {
+            .autenticacao {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="logo">
+            <a href="#inicio">
+                <img src="http://files.cod3r.com.br/curso-web/logo.png" alt="Logo" />
+            </a>
+        </div>
+        <button class="menu-toggle">
+            <i class="fa fa-lg fa-bars"></i>
+        </button>
+        <nav class="menu">
+            <ul>
+                <li>
+                    <a href="#inicio">Início</a>
+                </li>
+                <li>
+                    <a href="#cursos">Cursos</a>
+                </li>
+                <li>
+                    <a href="#sobre">Sobre</a>
+                </li>
+                <li>
+                    <a href="#contato">Contato</a>
+                </li>
+            </ul>
+        </nav>
+        <aside class="autenticacao">
+            <a href="#login">Login</a>
+            <a href="#registar" class="botao destaque">Registrar</a>
+        </aside>
+    </header>
+
+    <script>
+        document.querySelectorAll('a').forEach((item) => {
+            item.onclick = (event) => {
+                document.querySelectorAll('.menu a').forEach((item2) => {
+                    if (event.srcElement.hash === item2.hash) {
+                        item2.style = "background-color: skyblue; color: #181515;"
+                    }
+                    else if (event.srcElement.parentElement.hash === item2.hash) {
+                        item2.style = "background-color: skyblue; color: #181515;"
+                    }
+                    else {
+                        console.log(item2)
+                        item2.style.backgroundColor = ""
+                        item2.style.color = ""
+                    }
+                })
+            }
+
+        })
+    </script>
+    <!-- <script src="js/util.js"></script> -->
+</body>
+
+</html>
